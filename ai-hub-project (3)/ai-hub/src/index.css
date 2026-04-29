@@ -1,0 +1,61 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  * {
+    box-sizing: border-box;
+    border-color: rgba(15, 20, 25, 0.1);
+  }
+
+  html {
+    font-size: 16px;
+    scroll-behavior: smooth;
+  }
+
+  body {
+    background-color: #FAFBFC;
+    color: #0F1419;
+    font-family: 'Manrope', sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: 'Crimson Pro', serif;
+    font-weight: 500;
+    line-height: 1.3;
+  }
+}
+
+@layer utilities {
+  .font-display {
+    font-family: 'Crimson Pro', serif;
+  }
+
+  .bg-grid-pattern {
+    background-image:
+      linear-gradient(rgba(10, 95, 127, 0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(10, 95, 127, 0.03) 1px, transparent 1px);
+    background-size: 40px 40px;
+  }
+
+  .bg-dot-pattern {
+    background-image: radial-gradient(rgba(10, 95, 127, 0.1) 1px, transparent 1px);
+    background-size: 20px 20px;
+  }
+
+  .glass-card {
+    background: rgba(255, 255, 255, 0.8);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.6);
+  }
+
+  .gradient-text {
+    background: linear-gradient(135deg, #0A5F7F via 40%, #06B6D4, #F59E0B);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+}
