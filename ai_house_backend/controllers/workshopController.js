@@ -23,7 +23,7 @@ exports.getAllWorkshops = async (req, res) => {
             query.title = { $regex: search, $options: 'i' };
         }
 
-        let findQuery = Workshop.find(query).populate('department');
+        let findQuery = Workshop.find(query);
         
         // Limitation (pour la Home Page par exemple)
         if (limit) findQuery = findQuery.limit(parseInt(limit));

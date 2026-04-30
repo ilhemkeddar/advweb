@@ -2,6 +2,10 @@ const User = require('../models/User');
 const Workshop = require('../models/Workshop');
 const Report = require('../models/Report');
 const Registration = require('../models/Registration');
+const Contact = require('../models/Contact');
+
+const normalizeStatus = (value) => String(value || '').toLowerCase();
+const todayKey = () => new Date().toISOString().slice(0, 10);
 
 
 // TOUTES LES FONCTIONS DU CONTRÔLEUR ADMIN
@@ -10,12 +14,13 @@ const Registration = require('../models/Registration');
 // 1. Statistiques Globales 
 exports.getAdminStats = async (req, res) => {
     try {
+        const today = todayKey();
         const stats = {
             totalStudents: await User.countDocuments({ role: 'Student' }),
             totalProfessors: await User.countDocuments({ role: 'Professor' }),
             totalWorkshops: await Workshop.countDocuments(),
-            upcomingEvents: await Workshop.countDocuments({ status: 'Approved', date: { $gte: new Date().toISOString() } }),
-            pendingApprovals: await Workshop.countDocuments({ status: 'Pending' })
+            upcomingEvents: await Workshop.countDocuments({ status: 'approved', date: { $gte: today } }),
+            pendingApprovals: await Workshop.countDocuments({ status: 'pending' })
         };
         res.json(stats);
     } catch (err) {
@@ -38,8 +43,7 @@ exports.getRecentActivity = async (req, res) => {
 // 3. Gestion de la Validation 
 exports.getPendingWorkshops = async (req, res) => {
     try {
-        const pending = await Workshop.find({ status: 'Pending' })
-            .populate('professorId', 'fullName email')
+        const pending = await Workshop.find({ status: 'pending' })
             .sort({ createdAt: -1 });
         res.json(pending);
     } catch (err) {
@@ -50,12 +54,13 @@ exports.getPendingWorkshops = async (req, res) => {
 exports.validateWorkshop = async (req, res) => {
     try {
         const { workshopId, action } = req.body; 
+        const nextStatus = normalizeStatus(action);
         const updatedWorkshop = await Workshop.findByIdAndUpdate(
             workshopId,
-            { status: action },
+            { status: nextStatus },
             { new: true }
         );
-        res.json({ message: `Workshop ${action === 'Approved' ? 'approuvé' : 'refusé'} !`, workshop: updatedWorkshop });
+        res.json({ message: `Workshop ${nextStatus === 'approved' ? 'approuvé' : 'refusé'} !`, workshop: updatedWorkshop });
     } catch (err) {
         res.status(500).json({ error: err.message });
     }
@@ -65,7 +70,6 @@ exports.validateWorkshop = async (req, res) => {
 exports.getAllWorkshops = async (req, res) => {
     try {
         const workshops = await Workshop.find()
-            .populate('professorId', 'fullName') 
             .sort({ date: -1 });
         res.json(workshops);
     } catch (err) {
@@ -109,6 +113,49 @@ exports.getAllReports = async (req, res) => {
     }
 };
 
+exports.getAllContactMessages = async (req, res) => {
+    try {
+        const messages = await Contact.find().sort({ createdAt: -1 });
+        res.json(messages);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+};
+
+exports.markContactMessageRead = async (req, res) => {
+    try {
+        const { messageId } = req.params;
+        const updatedMessage = await Contact.findByIdAndUpdate(
+            messageId,
+            { status: 'Read' },
+            { new: true }
+        );
+        if (!updatedMessage) {
+            return res.status(404).json({ error: 'Contact message not found' });
+        }
+        res.json({ message: 'Contact message marked as read', message: updatedMessage });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+};
+
+exports.markReportResolved = async (req, res) => {
+    try {
+        const { reportId } = req.params;
+        const updatedReport = await Report.findByIdAndUpdate(
+            reportId,
+            { read: true },
+            { new: true }
+        );
+        if (!updatedReport) {
+            return res.status(404).json({ error: 'Report not found' });
+        }
+        res.json({ message: 'Report marked as resolved', report: updatedReport });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+};
+
 // 7. Analytics 
 exports.getAnalyticsData = async (req, res) => {
     try {
@@ -133,9 +180,9 @@ exports.getAnalyticsData = async (req, res) => {
 // 8. Calendrier 
 exports.getCalendarWorkshops = async (req, res) => {
     try {
-        const workshops = await Workshop.find({ status: 'Approved' })
+        const workshops = await Workshop.find({ status: 'approved' })
             .sort({ date: 1 }) 
-            .select('title professorName department date time location status');
+            .select('title professor department date time location status');
         res.json(workshops);
     } catch (err) {
         res.status(500).json({ error: err.message });
@@ -145,8 +192,8 @@ exports.getCalendarWorkshops = async (req, res) => {
 // 9. Certificats
 exports.getCompletedWorkshops = async (req, res) => {
     try {
-        const today = new Date().toISOString();
-        const completed = await Workshop.find({ status: 'Approved', date: { $lt: today } });
+        const today = todayKey();
+        const completed = await Workshop.find({ status: 'approved', date: { $lt: today } });
         res.json(completed);
     } catch (err) {
         res.status(500).json({ error: err.message });

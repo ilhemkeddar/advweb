@@ -9,7 +9,8 @@ const reportSchema = new mongoose.Schema({
         enum: ['low', 'medium', 'high'], 
         default: 'medium' 
     },
-    date: { type: String, default: () => new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }) }
+    date: { type: String, default: () => new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }) },
+    read: { type: Boolean, default: false }
 }, { timestamps: true });
 
 module.exports = mongoose.model('Report', reportSchema);

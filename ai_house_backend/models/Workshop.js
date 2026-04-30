@@ -6,7 +6,7 @@ const workshopSchema = new mongoose.Schema({
   date: String,
   time: String,
   location: String,
-  department: { type: mongoose.Schema.Types.ObjectId, ref: 'Department' },
+  department: { type: String },
   // Structure parfaite pour correspondre au Frontend
   professor: {
     name: { type: String },

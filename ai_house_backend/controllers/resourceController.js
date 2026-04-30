@@ -1,7 +1,10 @@
 const Resource = require('../models/Resource');
 const Workshop = require('../models/Workshop');
 
+const todayKey = () => new Date().toISOString().slice(0, 10);
+
 // Récupérer toutes les ressources avec filtres
+// IMPORTANT: Show ONLY resources from past events
 exports.getAllResources = async (req, res) => {
     try {
         const { department, type } = req.query;
@@ -27,10 +30,11 @@ exports.getAllResources = async (req, res) => {
 // Ta fonction de stats (Garde-la, elle est top !)
 exports.getResourceStats = async (req, res) => {
     try {
+        const today = todayKey();
         res.json({
             totalResources: await Resource.countDocuments(),
             fileTypesCount: (await Resource.distinct('type')).length, // Changé fileType en type
-            pastWorkshops: await Workshop.countDocuments({ status: 'Past' })
+            pastWorkshops: await Workshop.countDocuments({ date: { $lt: today } })
         });
     } catch (err) {
         res.status(500).json({ error: err.message });

@@ -46,6 +46,15 @@ router.get('/users', auth, isAdmin, adminCtrl.getUsersByRole);
 // Récupère tous les messages de support/plaintes 
 router.get('/reports', auth, isAdmin, adminCtrl.getAllReports);
 
+// Marque un rapport comme résolu
+router.patch('/reports/:reportId/resolve', auth, isAdmin, adminCtrl.markReportResolved);
+
+// Récupère tous les messages du formulaire de contact
+router.get('/contacts', auth, isAdmin, adminCtrl.getAllContactMessages);
+
+// Marque un message de contact comme lu
+router.patch('/contacts/:messageId/read', auth, isAdmin, adminCtrl.markContactMessageRead);
+
 // Récupère les workshops formatés pour la vue Calendrier 
 router.get('/calendar', auth, isAdmin, adminCtrl.getCalendarWorkshops);
 
